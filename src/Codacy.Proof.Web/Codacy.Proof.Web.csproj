@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Codacy.Proof.Web</RootNamespace>
+    <DefineConstants>$(DefineConstants);EnablePlayerAuth</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="Destructurama.Attributed" Version="4.0.0" />
+    <PackageReference Include="Kralizek.Extensions.Configuration.AWSSecretsManager" Version="1.7.0" />
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
+    <PackageReference Include="NewRelic.Agent.Api" Version="10.23.0" />
+    <PackageReference Include="NewRelic.LogEnrichers.Serilog" Version="1.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.5" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageReference Include="Serilog.Sinks.NewRelic" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+      </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Auth\**" />
+    <None Remove="Auth\**" />
+    <EmbeddedResource Remove="Auth\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Codacy.Proof.FirstMonolithicModule\Codacy.Proof.FirstMonolithicModule.csproj" />
+    <ProjectReference Include="..\Codacy.Proof.SecondMonolithicModule\Codacy.Proof.SecondMonolithicModule.csproj" />
+  </ItemGroup>
+
+</Project>

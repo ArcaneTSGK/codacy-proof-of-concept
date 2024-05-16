@@ -1,0 +1,51 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /
+EXPOSE 80
+
+# Copy csproj and restore as distinct layers
+COPY ["src/Codacy.Proof.Web/Codacy.Proof.Web.csproj", "src/Codacy.Proof.Web/"]
+COPY ["src/Codacy.Proof.SharedKernel/Codacy.Proof.SharedKernel.csproj", "src/Codacy.Proof.SharedKernel/"]
+COPY ["src/Codacy.Proof.FirstMonolithicModule/Codacy.Proof.FirstMonolithicModule.csproj", "src/Codacy.Proof.FirstMonolithicModule/"]
+COPY ["src/Codacy.Proof.FirstMonolithicModule.Contracts/Codacy.Proof.FirstMonolithicModule.Contracts.csproj", "src/Codacy.Proof.FirstMonolithicModule.Contracts/"]
+COPY ["src/Codacy.Proof.SecondMonolithicModule/Codacy.Proof.SecondMonolithicModule.csproj", "src/Codacy.Proof.SecondMonolithicModule/"]
+COPY ["src/Codacy.Proof.SecondMonolithicModule.Contracts/Codacy.Proof.SecondMonolithicModule.Contracts.csproj", "src/Codacy.Proof.SecondMonolithicModule.Contracts/"]
+
+COPY ["NuGet.config", "/nuget.config"]
+
+RUN dotnet restore "src/Codacy.Proof.Web/Codacy.Proof.Web.csproj" --disable-parallel
+
+# Copy everything else and build
+COPY . .
+WORKDIR "/src/Codacy.Proof.Web"
+RUN dotnet publish "Codacy.Proof.Web.csproj" -c Release -o /app/publish
+
+# Build the runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+
+# Install the agent
+RUN apt-get update && apt-get install -y wget ca-certificates gnupg \
+&& echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list \
+&& wget https://download.newrelic.com/548C16BF.gpg \
+&& apt-key add 548C16BF.gpg \
+&& apt-get update \
+&& apt-get install -y newrelic-dotnet-agent 
+
+ARG NEWRELIC_AppName
+ARG NEWRELIC_LicenseKey
+
+# Enable the agent
+ENV CORECLR_ENABLE_PROFILING=1 \
+CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A} \
+CORECLR_NEWRELIC_HOME=/usr/local/newrelic-dotnet-agent \
+CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so \
+NEW_RELIC_LICENSE_KEY=$NEWRELIC_LicenseKey \
+NEW_RELIC_APP_NAME=$NEWRELIC_AppName
+
+WORKDIR /app
+
+COPY --from=build /app/publish .
+COPY ["newrelic.config", "/app/newrelic.config"]
+
+ENV ASPNETCORE_URLS=http://+:80
+
+ENTRYPOINT ["dotnet", "Codacy.Proof.Web.dll"]

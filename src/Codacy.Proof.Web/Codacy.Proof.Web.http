@@ -1,0 +1,6 @@
+@Codacy.Proof.Web_HostAddress = http://localhost:5156
+
+GET {{Codacy.Proof.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
